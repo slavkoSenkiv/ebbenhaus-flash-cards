@@ -40,15 +40,18 @@ class BankDeck:
             deck_sheet.cell(row=deck_sheet.max_row, column=2).value = word
             words_collection_wb.save(wb_name)
             self.deck.setdefault(time_stamp, word)
-            time.sleep(0.1)
+            time.sleep(0.5)
             print(word, 'goes into', self.deck_name)
         else:
             print(f'{word} already in {self.deck_name}')
 
     def print_words(self):
         print(self.deck_name, end=': ')
-        for k, v in self.deck.items():
-            print(self.deck[k], end=' ')
+        if len(self.deck) == 0:
+            print(f'{self.deck_name} is empty')
+        else:
+            for k, v in self.deck.items():
+                print(self.deck[k], end=' ')
         print()
 
 
@@ -60,34 +63,33 @@ class WorkingDeck(BankDeck):
 
     def pick_word_from_bank_deck(self):
         earliest_word_time = datetime.datetime.now()
-        print('earliest_word_time', earliest_word_time)
         for word_time_stamp_key in self.bank_deck.deck:
-            print('word_time_stamp_key', word_time_stamp_key)
             if word_time_stamp_key is not None:
                 if earliest_word_time >= word_time_stamp_key:
                     earliest_word_time = word_time_stamp_key
-                    print('=> earliest_word_time', earliest_word_time)
-        print('earliest_word_time', earliest_word_time)
 
-        oldest_bank_deck_word = self.bank_deck.deck[earliest_word_time]  # error here
-        print('oldest_bank_deck_word', oldest_bank_deck_word)
-        know_it = 'get'  # pyinputplus.inputMenu(['know', 'don't know'], f'know {oldest_dic_item}: \n', numbered=True)
+        know_it = 'don*t know'
+        # pyinputplus.inputMenu(['know', 'don't know'], f'know {oldest_dic_item}: \n', numbered=True)
         if know_it == 'know':
-            self.bank_deck.deck[datetime.datetime.now()] = oldest_bank_deck_word
-            del oldest_bank_deck_word
+            print(self.bank_deck.deck)
+            print(f'ah, u know "{self.bank_deck.deck[earliest_word_time]}"')
+            self.bank_deck.deck[datetime.datetime.now()] = self.bank_deck.deck[earliest_word_time]
+            del self.bank_deck.deck[earliest_word_time]
+            print(self.bank_deck.deck)
         else:
+            # <editor-fold desc="sheet adjustment">
             bank_deck_sheet = words_collection_wb[self.bank_deck.deck_name]
             working_deck_sheet = words_collection_wb[self.deck_name]
             for row in bank_deck_sheet.iter_rows(2):
                 for cell in row:
-                    if cell.value == oldest_bank_deck_word:
+                    if cell.value == self.bank_deck.deck[earliest_word_time]:
                         working_deck_sheet.cell(row=working_deck_sheet.max_row + 1, column=1).value = datetime.datetime.now()
-                        working_deck_sheet.cell(row=working_deck_sheet.max_row, column=2).value = oldest_bank_deck_word
+                        working_deck_sheet.cell(row=working_deck_sheet.max_row, column=2).value = self.bank_deck.deck[earliest_word_time]
                         bank_deck_sheet.delete_rows(cell.row, 1)
                         words_collection_wb.save(wb_name)
-
-            self.deck[datetime.datetime.now()] = oldest_bank_deck_word
-            print(f'{oldest_bank_deck_word} ==> moved to {self.deck_name}')
+            super().__init__(deck_name=self.deck_name)
+            # </editor-fold>
+            print(f'{self.bank_deck.deck[earliest_word_time]} ==> moved from {self.bank_deck.deck_name} ==> {self.deck_name}')
             del self.bank_deck.deck[earliest_word_time]
 
     def move_words_to_bank_deck(self):
@@ -119,9 +121,3 @@ class WorkingDeck(BankDeck):
             print('as u wish')
         if leave_words == 'move':
             self.move_words_to_bank_deck()
-
-
-
-
-
-
