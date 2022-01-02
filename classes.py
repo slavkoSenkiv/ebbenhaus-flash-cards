@@ -42,7 +42,7 @@ class BankDeck:
             deck_sheet.cell(row=deck_sheet.max_row, column=2).value = word
             words_collection_wb.save(wb_name)
             self.deck.setdefault(time_stamp, word)
-            # time.sleep(0.5)
+            time.sleep(0.1)
             print(word, 'goes into', self.deck_name)
         else:
             print(f'{word} already in {self.deck_name}')
@@ -70,6 +70,9 @@ class WorkingDeck(BankDeck):
             if word_time_stamp_key is not None:
                 if oldest_word_time >= word_time_stamp_key:
                     oldest_word_time = word_time_stamp_key
+        print('oldest_word_time', oldest_word_time)
+        for k, v in self.bank_deck.deck.items():
+            print(k, v)
 
         # know_it = 'don*t know'
         know_it = pyinputplus.inputMenu(['know', 'don*t know'], f'know {self.bank_deck.deck[oldest_word_time]}: \n', numbered=True)

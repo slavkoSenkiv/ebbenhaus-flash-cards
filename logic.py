@@ -15,7 +15,6 @@ bank_deck.add_new_word('mother')
 bank_deck.add_new_word('sister')
 bank_deck.add_new_word('brother')
 print()
-
 bank_deck.print_words()
 working_deck.print_words()
 print()
@@ -28,11 +27,11 @@ bank_deck.print_words()
 working_deck.print_words()
 print()
 
-"""print('===PICKING WORD FROM BANK DECK===')
+print('===PICKING WORD FROM BANK DECK===')
 working_deck.pick_word_from_bank_deck()
 print()
 bank_deck.print_words()
 working_deck.print_words()
-"""
+
 
 
