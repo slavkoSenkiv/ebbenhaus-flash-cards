@@ -1,8 +1,10 @@
 from classes import BankDeck
 from classes import WorkingDeck
-print('===DELETE PREVIOUS CHANGES===')
 bank_deck = BankDeck()
 working_deck = WorkingDeck()
+bank_deck.print_words()
+working_deck.print_words()
+print('===DELETE PREVIOUS CHANGES===')
 bank_deck.clear_deck()
 working_deck.clear_deck()
 bank_deck.print_words()

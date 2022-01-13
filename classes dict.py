@@ -1,40 +1,24 @@
 import datetime
 import time
 import pyinputplus
-import openpyxl
+import db_file
 # <editor-fold desc="access exell">
-wb_name = 'words collection.xlsx'
-bank_deck_name = 'bank_deck'
-working_deck_name = 'working_deck'
-words_collection_wb = openpyxl.open(wb_name)
+
 # </editor-fold>
 
 
 class BankDeck:
     def __init__(self, deck_name='bank_deck'):
         self.deck_name = deck_name
-        self.deck = {}
-        deck_sheet = words_collection_wb[self.deck_name]
-        for row in range(2, deck_sheet.max_row+1):
-            key = deck_sheet.cell(row=row, column=1).value
-            word = deck_sheet.cell(row=row, column=2).value
-            self.deck[key] = word
+        self.deck = db_file.bank_deck
 
     def clear_deck(self):
-        for sheet in words_collection_wb.sheetnames:
-            if sheet.startswith(self.deck_name):
-                del words_collection_wb[self.deck_name]
-        words_collection_wb.create_sheet(self.deck_name)
-        deck_sheet = words_collection_wb[self.deck_name]
-        deck_sheet['A1'] = 'key'
-        deck_sheet['B1'] = 'word'
-        words_collection_wb.save(wb_name)
         self.deck = {}
 
     def get_deck(self):
         return self.deck
 
-    def add_new_word(self, word):
+    """def add_new_word(self, word):
         if word not in self.deck.values():
             deck_sheet = words_collection_wb[self.deck_name]
             time_stamp = datetime.datetime.now()
@@ -55,7 +39,7 @@ class BankDeck:
             lis = list(self.deck.values())
             for value in lis[0:-1]:
                 print(value, end=' ')
-            print(lis[-1])
+            print(lis[-1])"""
 
 
 class WorkingDeck(BankDeck):
@@ -64,7 +48,7 @@ class WorkingDeck(BankDeck):
         self.bank_deck = BankDeck()
         self.learned_deck = {}
 
-    def move_words_to_bank_deck(self):
+    """def move_words_to_bank_deck(self):
         print(self.deck)
         print(self.bank_deck)
         for key in self.deck.keys():
@@ -135,4 +119,4 @@ class WorkingDeck(BankDeck):
             del self.bank_deck.deck[oldest_word_time]
             super().__init__(deck_name=self.bank_deck.deck_name)
 
-            # </editor-fold>
+            # </editor-fold>"""
