@@ -1,7 +1,9 @@
 import datetime
 import time
 import pyinputplus
-import db_file
+import bank_deck_file
+import working_deck_file
+
 # <editor-fold desc="access exell">
 
 # </editor-fold>
@@ -10,7 +12,8 @@ import db_file
 class BankDeck:
     def __init__(self, deck_name='bank_deck'):
         self.deck_name = deck_name
-        self.deck = db_file.bank_deck
+        f = open(f'{deck_name}_file.py', 'w')
+        self.deck = f
 
     def clear_deck(self):
         self.deck = {}
