@@ -1,38 +1,39 @@
 import datetime
 import time
 import pyinputplus
-import bank_deck_file
-import working_deck_file
+import gspread
 
-# <editor-fold desc="access exell">
-
+# <editor-fold desc="access db">
+google_client = gspread.oauth()
+gs = google_client.open('words collection')
+print(gs.title)
+bank_deck_sheet = gs.worksheet('bank deck')
+working_deck_sheet = gs.worksheet('working deck')
 # </editor-fold>
 
 
 class BankDeck:
-    def __init__(self, deck_name='bank_deck'):
+    def __init__(self, deck_name='bank deck'):
         self.deck_name = deck_name
-        f = open(f'{deck_name}_file.py', 'w')
-        self.deck = f
+        self.deck_sheet = gs.worksheet(deck_name)
+        self.deck = self.deck_sheet.get_all_records()
 
     def clear_deck(self):
-        self.deck = {}
+        self.deck_sheet.clear()
+        self.deck_sheet.update('A1:D1', [['time', 'eng word', 'ua word', 'use score']])
+        self.deck = self.deck_sheet.get_all_records()
 
     def get_deck(self):
         return self.deck
 
-    """def add_new_word(self, word):
-        if word not in self.deck.values():
-            deck_sheet = words_collection_wb[self.deck_name]
-            time_stamp = datetime.datetime.now()
-            deck_sheet.cell(row=deck_sheet.max_row+1, column=1).value = time_stamp
-            deck_sheet.cell(row=deck_sheet.max_row, column=2).value = word
-            words_collection_wb.save(wb_name)
-            self.deck.setdefault(time_stamp, word)
-            time.sleep(0.1)
-            print(word, 'goes into', self.deck_name)
-        else:
-            print(f'{word} already in {self.deck_name}')
+    def add_new_word(self, word):
+        for note in self.deck:
+            if word not in note.values():
+                time_stamp = datetime.datetime.now()
+                self.deck_sheet.update(f'A{self.deck_sheet.row_count + 1}:D{self.deck_sheet.row_count + 1}', [[time_stamp, word, word, 1]])
+                print(word, 'goes into', self.deck_name)
+            else:
+                print(f'{word} already in {self.deck_name}')
 
     def print_words(self):
         print(self.deck_name, end=': ')
