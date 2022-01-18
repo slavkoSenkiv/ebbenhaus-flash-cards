@@ -1,9 +1,14 @@
 import classes_gs
 import pprint
 d1 = classes_gs.BankDeck()
-# d2 = classes_gs.WorkingDeck()
+d2 = classes_gs.WorkingDeck()
 
-print(pprint.pformat(d1.deck))
-d1.clear_deck()
-print(pprint.pformat(d1.deck))
-d1.add_new_word()
+d1.print_words()
+d1.add_new_word('brother1 brat1')
+d1.print_words()
+print('\n')
+
+d2.print_words()
+d2.add_new_word('brother2 brat2')
+d2.print_words()
+print('\n')

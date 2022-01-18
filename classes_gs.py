@@ -6,9 +6,6 @@ import gspread
 # <editor-fold desc="access db">
 google_client = gspread.oauth()
 gs = google_client.open('words collection')
-print(gs.title)
-bank_deck_sheet = gs.worksheet('bank deck')
-working_deck_sheet = gs.worksheet('working deck')
 # </editor-fold>
 
 
@@ -18,37 +15,52 @@ class BankDeck:
         self.deck_sheet = gs.worksheet(deck_name)
         self.deck = self.deck_sheet.get_all_records()
 
+    def update_deck(self):
+        self.deck = self.deck_sheet.get_all_records()
+
     def clear_deck(self):
         self.deck_sheet.clear()
         self.deck_sheet.update('A1:D1', [['time', 'eng word', 'ua word', 'use score']])
-        self.deck = self.deck_sheet.get_all_records()
+        self.update_deck()
+        print(self.deck_name, 'was cleared')
 
     def get_deck(self):
+        self.update_deck()
         return self.deck
 
-    def add_new_word(self, word):
+    def get_all_eng_words(self):
+        self.update_deck()
+        words_list = []
         for note in self.deck:
-            if word not in note.values():
-                time_stamp = datetime.datetime.now()
-                self.deck_sheet.update(f'A{self.deck_sheet.row_count + 1}:D{self.deck_sheet.row_count + 1}', [[time_stamp, word, word, 1]])
-                print(word, 'goes into', self.deck_name)
-            else:
-                print(f'{word} already in {self.deck_name}')
+            words_list.append(note['eng word'])
+        return words_list
+
+    def add_new_word(self, word_note):
+        word_note_list = word_note.split(' ')
+        if word_note_list[0] not in self.get_all_eng_words():
+            time_stamp = datetime.datetime.today().strftime('%d.%m.%y %H:%M:%S')
+            next_free_row = len(self.deck_sheet.get_all_values()) + 1
+            self.deck_sheet.update(f'A{next_free_row}:D{next_free_row}', [[time_stamp, word_note_list[0], word_note_list[1], 1]])
+            print(word_note_list[0], 'goes into the', self.deck_name)
+            self.update_deck()
+        else:
+            print(f'{word_note_list[0]} already in the {self.deck_name}')
 
     def print_words(self):
+        self.update_deck()
         print(self.deck_name, end=': ')
-        if len(self.deck) == 0:
-            print(f'{self.deck_name} is empty')
+        if len(self.get_all_eng_words()) == 0:
+            print(f'is empty')
         else:
-            lis = list(self.deck.values())
-            for value in lis[0:-1]:
+            lis = self.get_all_eng_words()
+            for value in lis[:-1]:
                 print(value, end=' ')
-            print(lis[-1])"""
+            print(lis[-1])
 
 
 class WorkingDeck(BankDeck):
     def __init__(self):
-        super().__init__(deck_name='working_deck')
+        super().__init__(deck_name='working deck')
         self.bank_deck = BankDeck()
         self.learned_deck = {}
 
