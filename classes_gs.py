@@ -64,19 +64,23 @@ class WorkingDeck(BankDeck):
         self.bank_deck = BankDeck()
         self.learned_deck = {}
 
-    """def move_words_to_bank_deck(self):
+    def move_words_to_bank_deck(self):
+        # the problem here is that update_deck
+        self.update_deck()
         print(self.deck)
-        print(self.bank_deck)
-        for key in self.deck.keys():
-            self.bank_deck.deck[datetime.datetime.now()] = self.deck[key]
-        self.deck = {}
-        words_collection_wb.save(wb_name) # here we saving the sheet but we have not made any changes to it,
-        # meanwhile we should, like move words in wb from 1 sheet to another, and only then save it
-        print(f'we moved words from {self.deck_name} to bank_deck')
+        print(self.bank_deck.deck)
+        time_stamp = datetime.datetime.today().strftime('%d.%m.%y %H:%M:%S')
+        for word_note in self.deck:
+            word_note['time'] = time_stamp
+            self.bank_deck.deck.append(word_note)
+        self.clear_deck()
+        print(f'we moved words from {self.deck_name} to {self.bank_deck.deck_name}')
+        self.update_deck()
+        self.bank_deck.update_deck()
         print(self.deck)
-        print(self.bank_deck)
+        print(self.bank_deck.deck)
 
-    def rotation(self):
+    """def rotation(self):
         while len(self.deck) > 0:
             for key in list(self.deck.keys()):
                 remember = 'yes'  # pyinputplus.inputMenu(['yes', 'no'], f'know {self.deck[key]} ?\n', numbered=True)
