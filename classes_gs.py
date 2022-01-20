@@ -2,10 +2,27 @@ import datetime
 import time
 import pyinputplus
 import gspread
+import pprint
 
 # <editor-fold desc="access db">
 google_client = gspread.oauth()
 gs = google_client.open('words collection')
+# </editor-fold>
+
+
+# <editor-fold desc="functions">
+def get_col_num(sheet, col_name):
+    first_row_list = sheet.row_values()
+    if col_name in first_row_list:
+        return first_row_list.index(col_name) + 1
+    else:
+        print('WRONG COL NAME')
+
+
+def get_col_names_and_numbers(sheet):
+    dict = {}
+    for value in sheet.row_values(1):
+        dict[value] = get_col_num(sheet, value)
 # </editor-fold>
 
 
@@ -17,22 +34,21 @@ class BankDeck:
 
     def update_deck(self):
         self.deck = self.deck_sheet.get_all_records()
+        # print(f'{self.deck_name} is updated')
 
     def clear_deck(self):
         self.deck_sheet.clear()
-        self.deck_sheet.update('A1:D1', [['time', 'eng word', 'ua word', 'use score']])
-        self.update_deck()
+        self.deck_sheet.update('A1:D1', [['time', 'eng', 'ua', '#']])
         print(self.deck_name, 'was cleared')
 
     def get_deck(self):
-        self.update_deck()
         return self.deck
 
     def get_all_eng_words(self):
         self.update_deck()
         words_list = []
         for note in self.deck:
-            words_list.append(note['eng word'])
+            words_list.append(note['eng'])
         return words_list
 
     def add_new_word(self, word_note):
@@ -47,7 +63,7 @@ class BankDeck:
             print(f'{word_note_list[0]} already in the {self.deck_name}')
 
     def print_words(self):
-        self.update_deck()
+        # self.update_deck()
         print(self.deck_name, end=': ')
         if len(self.get_all_eng_words()) == 0:
             print(f'is empty')
@@ -57,6 +73,10 @@ class BankDeck:
                 print(value, end=' ')
             print(lis[-1])
 
+    def print_deck_dicts(self):
+        print(self.deck_name)
+        print(pprint.pformat(self.get_deck()))
+
 
 class WorkingDeck(BankDeck):
     def __init__(self):
@@ -65,20 +85,14 @@ class WorkingDeck(BankDeck):
         self.learned_deck = {}
 
     def move_words_to_bank_deck(self):
-        # the problem here is that update_deck
-        self.update_deck()
-        print(self.deck)
-        print(self.bank_deck.deck)
-        time_stamp = datetime.datetime.today().strftime('%d.%m.%y %H:%M:%S')
-        for word_note in self.deck:
-            word_note['time'] = time_stamp
-            self.bank_deck.deck.append(word_note)
-        self.clear_deck()
+        self.print_words()
+        self.bank_deck.print_words()
+        self.bank_deck.deck.append(self.deck)
+        # self.clear_deck()
+
+        self.print_deck_dicts()
+        self.bank_deck.print_deck_dicts()
         print(f'we moved words from {self.deck_name} to {self.bank_deck.deck_name}')
-        self.update_deck()
-        self.bank_deck.update_deck()
-        print(self.deck)
-        print(self.bank_deck.deck)
 
     """def rotation(self):
         while len(self.deck) > 0:
