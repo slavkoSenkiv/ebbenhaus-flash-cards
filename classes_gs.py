@@ -76,13 +76,18 @@ class BankDeck:
         print(self.deck_name)
         print(pprint.pformat(self.get_deck()))
 
+    def move_certain_word_to_certain_deck(self, word, class_of_destination_deck):
+        if word in self.get_all_eng_words():
+            for word_note in self.deck:
+                class_of_destination_deck.deck.append(self.deck[eng_key])
+
 
 class WorkingDeck(BankDeck):
     def __init__(self):
         super().__init__('working deck')
-        self.learned_deck_name = 'learned deck'
+        # self.learned_deck_name = 'learned deck'
         self.bank_deck = BankDeck()
-        self.learned_deck = []
+        self.learned_deck = LearnedDeck()
 
     def move_working_deck_into_bank_deck(self):
         update_list = [column_headers]
@@ -100,9 +105,9 @@ class WorkingDeck(BankDeck):
             for word_note in self.deck:
                 know = pyinputplus.inputMenu(['yes', 'no'], f'know {word_note[eng_key]} ?\n', numbered=True)
                 if know == 'yes':
-                    self.learned_deck.append(word_note)
+                    self.learned_deck.deck.append(word_note)
                     self.deck.remove(word_note)
-                    print(f'you have learned {word_note[eng_key]} so it goes out of this rotation')
+                    print(f'you have learned {word_note[eng_key]} so it goes out of this rotation to {self.learned_deck.deck_name}')
                 if know == 'no':
                     word_note[time_key] = get_time_now()
                     print(f'{word_note[eng_key]} goes in the end of the {self.deck_name}')
@@ -115,7 +120,7 @@ class WorkingDeck(BankDeck):
         if leave_words.startswith('leave'):
             self.deck = self.learned_deck
             self.learned_deck = []
-            print(f'we moved words from {self.learned_deck_name} to {self.deck_name}')
+            print(f'we left words in {self.deck_name}')
 
         if leave_words.startswith('move'):
             self.deck = self.learned_deck
@@ -128,13 +133,12 @@ class WorkingDeck(BankDeck):
             self.rotation_inside_working_deck()
 
 
-"""class LearnedDeck(WorkingDeck):
+class LearnedDeck(WorkingDeck):
     def __init__(self):
         super(WorkingDeck, self).__init__('learned deck')
 
 
-
-    def pick_word_from_bank_deck(self):
+"""def pick_word_from_bank_deck(self):
         oldest_word_time = datetime.datetime.now()
         for word_time_stamp_key in self.bank_deck.deck:
             if word_time_stamp_key is not None:
