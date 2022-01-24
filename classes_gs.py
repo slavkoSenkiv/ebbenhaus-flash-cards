@@ -16,17 +16,23 @@ ua_key = column_headers[2]
 score_key = column_headers[3]
 
 
-def get_time_now():
-    return time.strftime('%d.%m.%y %H:%M:%S')
+def get_str_time_now():
+    now = datetime.datetime.now()
+    return datetime.datetime.strftime(now, '%Y-%m-%d %H:%M:%S.%f')
 
+
+def convert_str_time_to_date_time(str):
+    return datetime.datetime.strptime(str, '%Y-%m-%d %H:%M:%S.%f')
 # </editor-fold>
 
 
 class BankDeck:
+    # <editor-fold desc="methods">
     def __init__(self, deck_name='bank deck'):
         self.deck_name = deck_name
         self.deck_sheet = gs.worksheet(deck_name)
         self.deck = self.deck_sheet.get_all_records()
+        # self.working_deck = WorkingDeck
 
     def update_dict_deck_from_sheet(self):
         self.deck = self.deck_sheet.get_all_records()
@@ -47,40 +53,73 @@ class BankDeck:
         return self.deck
 
     def get_all_eng_words(self):
-        words_list = []
-        for note in self.deck:
-            words_list.append(note['eng'])
-        return words_list
+        deck_lst = self.deck
+        words_lst = []
+        """for word_note in deck_lst:
+            words_lst.append(word_note[eng_key])"""
+        for i in deck_lst:
+            words_lst.append(i[eng_key])
+
+        return words_lst
 
     def add_new_word(self, word_note):
         word_note_list = word_note.split(' ')
         if word_note_list[0] not in self.get_all_eng_words():
             next_free_row = len(self.deck_sheet.get_all_values()) + 1
-            self.deck_sheet.update(f'A{next_free_row}:D{next_free_row}', [[get_time_now(), word_note_list[0], word_note_list[1], 1]])
+            self.deck_sheet.update(f'A{next_free_row}:D{next_free_row}', [[get_str_time_now(), word_note_list[0], word_note_list[1], 1]])
             print(word_note_list[0], 'goes into the', self.deck_name)
             self.update_dict_deck_from_sheet()
         else:
             print(f'{word_note_list[0]} already in the {self.deck_name}')
 
-    def print_words(self):
+    def print_dict_words(self):
+        eng_words_lst = self.get_all_eng_words()
         print(self.deck_name, end=': ')
-        if len(self.get_all_eng_words()) == 0:
+        if len(eng_words_lst) == 0:
             print(f'is empty')
         else:
-            lis = self.get_all_eng_words()
-            for value in lis[:-1]:
+            for value in eng_words_lst[:-1]:
                 print(value, end=' ')
-            print(lis[-1])
+            print(eng_words_lst[-1])
 
     def print_deck_dicts(self):
         print(self.deck_name)
         print(pprint.pformat(self.get_deck()))
 
-    def move_certain_word_to_certain_deck(self, word, class_of_destination_deck):
+    """def move_certain_word_to_certain_deck(self, word, WorkingDeck()):
         if word in self.get_all_eng_words():
             for word_note in self.deck:
-                class_of_destination_deck.deck.append(self.deck[eng_key])
+                class_of_destination_deck.deck.append(self.deck[eng_key])"""
+    # </editor-fold>
 
+    def rotate_offer_move_word(self, destination_deck_class):
+        while len(self.deck) > 0:
+
+            eldest_time = datetime.datetime.now()
+            for word_note in self.deck:
+                if convert_str_time_to_date_time(word_note[time_key]) < eldest_time:
+                    eldest_time = convert_str_time_to_date_time(word_note[time_key])
+
+            for word_note in self.deck:
+                if convert_str_time_to_date_time(word_note[time_key]) == eldest_time:
+                    know = pyinputplus.inputMenu(['yes', 'no'], f'know {word_note[eng_key]} ?\n', numbered=True)
+
+                    if know == 'yes':
+                        word_note[time_key] = get_str_time_now()
+                        print(f'{word_note[eng_key]} goes to the end of {self.deck_name}')
+
+                    if know == 'no':
+                        word_note[time_key] = get_str_time_now()
+                        print(f'{word_note[eng_key]} goes into {destination_deck_class.deck_name}')
+                        destination_deck_class.deck.append(word_note)
+                        self.deck.remove(word_note)
+
+        print(f'there are no words in {self.deck_name}')
+
+    def move_deck_into_other(self, destination_deck_class):
+        destination_deck_class.deck.append(self.deck)
+        self.deck = []
+        print(f'{self.deck_name} went into {destination_deck_class.deck_name}')
 
 class WorkingDeck(BankDeck):
     def __init__(self):
@@ -109,7 +148,7 @@ class WorkingDeck(BankDeck):
                     self.deck.remove(word_note)
                     print(f'you have learned {word_note[eng_key]} so it goes out of this rotation to {self.learned_deck.deck_name}')
                 if know == 'no':
-                    word_note[time_key] = get_time_now()
+                    word_note[time_key] = get_str_time_now()
                     print(f'{word_note[eng_key]} goes in the end of the {self.deck_name}')
         print(f'you have repeated all words from {self.deck_name}')
         self.migration_from_learned_deck()
@@ -137,6 +176,15 @@ class LearnedDeck(WorkingDeck):
     def __init__(self):
         super(WorkingDeck, self).__init__('learned deck')
 
+
+"""print(get_str_time_now())
+print(type(get_str_time_now()))
+
+print(datetime.datetime.now())
+print(type(datetime.datetime.now()))
+
+print(convert_str_time_to_date_time('22.01.22 22:13:59'))
+print(type(convert_str_time_to_date_time('22.01.22 22:13:59')))"""
 
 """def pick_word_from_bank_deck(self):
         oldest_word_time = datetime.datetime.now()
