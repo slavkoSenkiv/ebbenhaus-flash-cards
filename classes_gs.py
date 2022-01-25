@@ -32,7 +32,13 @@ class BankDeck:
         self.deck_name = deck_name
         self.deck_sheet = gs.worksheet(deck_name)
         self.deck = self.deck_sheet.get_all_records()
-        # self.working_deck = WorkingDeck
+
+    def move_deck_into_other(self, destination_deck_class, start_deck_class=None):
+        start_deck_class = self if start_deck_class is None else start_deck_class
+        for word_dict in start_deck_class.deck:
+            destination_deck_class.deck.append(word_dict)
+        start_deck_class.deck = []
+        print(f'{start_deck_class.deck_name} ==> {destination_deck_class.deck_name}')
 
     def update_dict_deck_from_sheet(self):
         self.deck = self.deck_sheet.get_all_records()
@@ -49,28 +55,12 @@ class BankDeck:
         self.deck_sheet.update('A1', [column_headers])
         print(self.deck_name, 'was cleared')
 
-    def get_deck(self):
-        return self.deck
-
     def get_all_eng_words(self):
         deck_lst = self.deck
         words_lst = []
-        """for word_note in deck_lst:
-            words_lst.append(word_note[eng_key])"""
-        for i in deck_lst:
-            words_lst.append(i[eng_key])
-
+        for word_dict in deck_lst:
+            words_lst.append(word_dict[eng_key])
         return words_lst
-
-    def add_new_word(self, word_note):
-        word_note_list = word_note.split(' ')
-        if word_note_list[0] not in self.get_all_eng_words():
-            next_free_row = len(self.deck_sheet.get_all_values()) + 1
-            self.deck_sheet.update(f'A{next_free_row}:D{next_free_row}', [[get_str_time_now(), word_note_list[0], word_note_list[1], 1]])
-            print(word_note_list[0], 'goes into the', self.deck_name)
-            self.update_dict_deck_from_sheet()
-        else:
-            print(f'{word_note_list[0]} already in the {self.deck_name}')
 
     def print_dict_words(self):
         eng_words_lst = self.get_all_eng_words()
@@ -84,13 +74,17 @@ class BankDeck:
 
     def print_deck_dicts(self):
         print(self.deck_name)
-        print(pprint.pformat(self.get_deck()))
+        print(pprint.pformat(self.deck))
 
-    """def move_certain_word_to_certain_deck(self, word, WorkingDeck()):
-        if word in self.get_all_eng_words():
-            for word_note in self.deck:
-                class_of_destination_deck.deck.append(self.deck[eng_key])"""
-    # </editor-fold>
+    def add_new_word(self, word_note):
+        word_note_list = word_note.split(' ')
+        if word_note_list[0] not in self.get_all_eng_words():
+            next_free_row = len(self.deck_sheet.get_all_values()) + 1
+            self.deck_sheet.update(f'A{next_free_row}:D{next_free_row}', [[get_str_time_now(), word_note_list[0], word_note_list[1], 1]])
+            print(word_note_list[0], 'goes into the', self.deck_name)
+            self.update_dict_deck_from_sheet()
+        else:
+            print(f'{word_note_list[0]} already in the {self.deck_name}')
 
     def rotate_offer_move_word(self, destination_deck_class):
         while len(self.deck) > 0:
@@ -116,10 +110,10 @@ class BankDeck:
 
         print(f'there are no words in {self.deck_name}')
 
-    def move_deck_into_other(self, destination_deck_class):
-        destination_deck_class.deck.append(self.deck)
-        self.deck = []
-        print(f'{self.deck_name} went into {destination_deck_class.deck_name}')
+
+
+    # </editor-fold>
+
 
 class WorkingDeck(BankDeck):
     def __init__(self):
@@ -127,17 +121,6 @@ class WorkingDeck(BankDeck):
         # self.learned_deck_name = 'learned deck'
         self.bank_deck = BankDeck()
         self.learned_deck = LearnedDeck()
-
-    def move_working_deck_into_bank_deck(self):
-        update_list = [column_headers]
-        for word_note in self.bank_deck.deck:
-            update_list.extend([[word_note[time_key], word_note[eng_key], word_note[ua_key], word_note[score_key]]])
-        for word_note in self.deck:
-            update_list.extend([[word_note[time_key], word_note[eng_key], word_note[ua_key], word_note[score_key]]])
-        self.bank_deck.deck_sheet.update('A1', update_list)
-        self.clear_deck()
-        self.update_dict_deck_from_sheet()
-        print(f'we moved words from {self.deck_name} to {self.bank_deck.deck_name}')
 
     def rotation_inside_working_deck(self):
         while len(self.deck) > 0:
@@ -151,7 +134,9 @@ class WorkingDeck(BankDeck):
                     word_note[time_key] = get_str_time_now()
                     print(f'{word_note[eng_key]} goes in the end of the {self.deck_name}')
         print(f'you have repeated all words from {self.deck_name}')
-        self.migration_from_learned_deck()
+        self.move_deck_into_other(self.bank_deck, self)
+        print(f'{self.deck_name} == > {self.deck_name})
+        # rself.migration_from_learned_deck()
 
     def migration_from_learned_deck(self):
         leave_words = pyinputplus.inputMenu([f'leave words in {self.deck_name}', f'move to {self.bank_deck.deck_name}', 'repeat again'], f'what next?\n', numbered=True)
@@ -174,7 +159,7 @@ class WorkingDeck(BankDeck):
 
 class LearnedDeck(WorkingDeck):
     def __init__(self):
-        super(WorkingDeck, self).__init__('learned deck')
+        super(WorkingDeck).__init__('learned deck')
 
 
 """print(get_str_time_now())
