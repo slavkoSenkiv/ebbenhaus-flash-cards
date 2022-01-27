@@ -15,6 +15,11 @@ eng_key = column_headers[1]
 ua_key = column_headers[2]
 score_key = column_headers[3]
 
+deck_names = ['bank deck', 'working deck', 'learned deck']
+bank_deck_name_key = deck_names[0]
+working_deck_name_key = deck_names[1]
+learned_deck_name_key = deck_names[2]
+
 
 def get_str_time_now():
     now = datetime.datetime.now()
@@ -27,17 +32,22 @@ def convert_str_time_to_date_time(str):
 
 
 class BankDeck:
-    # <editor-fold desc="methods">
-    def __init__(self, deck_name='bank deck'):
+    def __init__(self, deck_name=f'{bank_deck_name_key}'):
         self.deck_name = deck_name
         self.deck_sheet = gs.worksheet(deck_name)
         self.deck = self.deck_sheet.get_all_records()
 
     def move_deck_into_other(self, destination_deck_class, start_deck_class=None):
         start_deck_class = self if start_deck_class is None else start_deck_class
+        print(f'{start_deck_class.deck_name} ==> {destination_deck_class.deck_name}')
+        print('start', start_deck_class.deck)
+        print('destination', destination_deck_class.deck)
         for word_dict in start_deck_class.deck:
+            print('word dict', word_dict)
             destination_deck_class.deck.append(word_dict)
-        start_deck_class.deck = []
+            print('destination', destination_deck_class.deck)
+        start_deck_class.deck.clear() # todo this thing is not working
+        print('start', start_deck_class.deck)
         print(f'{start_deck_class.deck_name} ==> {destination_deck_class.deck_name}')
 
     def update_dict_deck_from_sheet(self):
@@ -111,14 +121,9 @@ class BankDeck:
         print(f'there are no words in {self.deck_name}')
 
 
-
-    # </editor-fold>
-
-
 class WorkingDeck(BankDeck):
     def __init__(self):
-        super().__init__('working deck')
-        # self.learned_deck_name = 'learned deck'
+        super().__init__(f'{working_deck_name_key}')
         self.bank_deck = BankDeck()
         self.learned_deck = LearnedDeck()
 
@@ -126,19 +131,28 @@ class WorkingDeck(BankDeck):
         while len(self.deck) > 0:
             for word_note in self.deck:
                 know = pyinputplus.inputMenu(['yes', 'no'], f'know {word_note[eng_key]} ?\n', numbered=True)
+
                 if know == 'yes':
                     self.learned_deck.deck.append(word_note)
                     self.deck.remove(word_note)
-                    print(f'you have learned {word_note[eng_key]} so it goes out of this rotation to {self.learned_deck.deck_name}')
+                    print(f'you have learned "{word_note[eng_key]}" \n'
+                          f'so it goes out of this rotation to {self.learned_deck.deck_name}')
+
                 if know == 'no':
                     word_note[time_key] = get_str_time_now()
                     print(f'{word_note[eng_key]} goes in the end of the {self.deck_name}')
-        print(f'you have repeated all words from {self.deck_name}')
-        self.move_deck_into_other(self.bank_deck, self)
-        print(f'{self.deck_name} == > {self.deck_name})
-        # rself.migration_from_learned_deck()
 
-    def migration_from_learned_deck(self):
+        print(f'you have repeated words from {working_deck_name_key}')
+        where_to_put_repeated_words = pyinputplus.inputMenu([f'{self.deck_name}', f'{self.bank_deck.deck_name}'],
+                                                            f'Where to put words from {self.learned_deck.deck_name}?\n', numbered=True)
+
+        if where_to_put_repeated_words == f'{self.deck_name}':
+            self.move_deck_into_other(self, self.learned_deck)
+
+        if where_to_put_repeated_words == f'{self.bank_deck.deck_name}':
+            self.move_deck_into_other(self.bank_deck, self.learned_deck)
+
+    """def migration_from_learned_deck(self):
         leave_words = pyinputplus.inputMenu([f'leave words in {self.deck_name}', f'move to {self.bank_deck.deck_name}', 'repeat again'], f'what next?\n', numbered=True)
 
         if leave_words.startswith('leave'):
@@ -154,12 +168,13 @@ class WorkingDeck(BankDeck):
         if leave_words.startswith('repeat'):
             self.deck = self.learned_deck
             self.learned_deck = []
-            self.rotation_inside_working_deck()
+            self.rotation_inside_working_deck()"""
 
 
-class LearnedDeck(WorkingDeck):
+class LearnedDeck(BankDeck):
     def __init__(self):
-        super(WorkingDeck).__init__('learned deck')
+        super().__init__(f'{learned_deck_name_key}')
+
 
 
 """print(get_str_time_now())
