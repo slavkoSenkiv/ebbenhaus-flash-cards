@@ -147,7 +147,7 @@ class WorkingDeck(BankDeck):
                                                             f'Where to put words from {self.learned_deck.deck_name}?\n', numbered=True)
 
         if where_to_put_repeated_words == f'{self.deck_name}':
-            self.move_deck_into_other(self, self.learned_deck)
+            self.move_deck_into_other(self.learned_deck) # todo this thing is not working
 
         if where_to_put_repeated_words == f'{self.bank_deck.deck_name}':
             self.move_deck_into_other(self.bank_deck, self.learned_deck)

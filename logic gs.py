@@ -26,6 +26,6 @@ d1 = classes_gs.BankDeck()
 d2 = classes_gs.WorkingDeck()
 d3 = classes_gs.LearnedDeck()
 
-print_decks()
+print_words()
 d2.rotation_inside_working_deck()
-print_decks()
+print_words()
