@@ -22,10 +22,17 @@ def print_decks():
     print(d3.deck)
 
 
+def update_decks():
+    d1.update_dict_deck_from_sheet()
+    d2.update_dict_deck_from_sheet()
+    d3.update_dict_deck_from_sheet()
+
+
 d1 = classes_gs.BankDeck()
 d2 = classes_gs.WorkingDeck()
 d3 = classes_gs.LearnedDeck()
 
 print_words()
 d2.rotation_inside_working_deck()
+update_decks()
 print_words()

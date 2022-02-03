@@ -39,15 +39,10 @@ class BankDeck:
 
     def move_deck_into_other(self, destination_deck_class, start_deck_class=None):
         start_deck_class = self if start_deck_class is None else start_deck_class
-        print(f'{start_deck_class.deck_name} ==> {destination_deck_class.deck_name}')
-        print('start', start_deck_class.deck)
-        print('destination', destination_deck_class.deck)
         for word_dict in start_deck_class.deck:
-            print('word dict', word_dict)
             destination_deck_class.deck.append(word_dict)
-            print('destination', destination_deck_class.deck)
-        start_deck_class.deck.clear() # todo this thing is not working
-        print('start', start_deck_class.deck)
+        start_deck_class.deck.clear()# clear_deck()
+        start_deck_class.update_sheet_from_dict_deck()
         print(f'{start_deck_class.deck_name} ==> {destination_deck_class.deck_name}')
 
     def update_dict_deck_from_sheet(self):
@@ -58,15 +53,21 @@ class BankDeck:
         update_list = [column_headers]
         for word_note in self.deck:
             update_list.extend([[word_note[time_key], word_note[eng_key], word_note[ua_key], word_note[score_key]]])
-        self.deck.deck_sheet.update('A1', update_list)
+        self.deck_sheet.update('A1', update_list)
 
     def clear_deck(self):
         self.deck_sheet.clear()
         self.deck_sheet.update('A1', [column_headers])
         print(self.deck_name, 'was cleared')
 
+    def clear_deck_dict(self):
+        self.deck.clear()
+
+    def get_deck(self):
+        return self.deck
+
     def get_all_eng_words(self):
-        deck_lst = self.deck
+        deck_lst = self.get_deck()
         words_lst = []
         for word_dict in deck_lst:
             words_lst.append(word_dict[eng_key])
@@ -130,7 +131,7 @@ class WorkingDeck(BankDeck):
     def rotation_inside_working_deck(self):
         while len(self.deck) > 0:
             for word_note in self.deck:
-                know = pyinputplus.inputMenu(['yes', 'no'], f'know {word_note[eng_key]} ?\n', numbered=True)
+                know = "yes" # pyinputplus.inputMenu(['yes', 'no'], f'know {word_note[eng_key]} ?\n', numbered=True)
 
                 if know == 'yes':
                     self.learned_deck.deck.append(word_note)
@@ -143,89 +144,17 @@ class WorkingDeck(BankDeck):
                     print(f'{word_note[eng_key]} goes in the end of the {self.deck_name}')
 
         print(f'you have repeated words from {working_deck_name_key}')
-        where_to_put_repeated_words = pyinputplus.inputMenu([f'{self.deck_name}', f'{self.bank_deck.deck_name}'],
-                                                            f'Where to put words from {self.learned_deck.deck_name}?\n', numbered=True)
+        where_to_put_repeated_words = f'{self.deck_name}' # pyinputplus.inputMenu([f'{self.deck_name}', f'{self.bank_deck.deck_name}'],
+                                                            # f'Where to put words from {self.learned_deck.deck_name}?\n', numbered=True)
 
-        if where_to_put_repeated_words == f'{self.deck_name}':
-            self.move_deck_into_other(self.learned_deck) # todo this thing is not working
+        # if where_to_put_repeated_words == f'{self.deck_name}':
+        self.move_deck_into_other(self, self.learned_deck)
 
-        if where_to_put_repeated_words == f'{self.bank_deck.deck_name}':
-            self.move_deck_into_other(self.bank_deck, self.learned_deck)
-
-    """def migration_from_learned_deck(self):
-        leave_words = pyinputplus.inputMenu([f'leave words in {self.deck_name}', f'move to {self.bank_deck.deck_name}', 'repeat again'], f'what next?\n', numbered=True)
-
-        if leave_words.startswith('leave'):
-            self.deck = self.learned_deck
-            self.learned_deck = []
-            print(f'we left words in {self.deck_name}')
-
-        if leave_words.startswith('move'):
-            self.deck = self.learned_deck
-            self.learned_deck = []
-            self.move_working_deck_into_bank_deck()
-
-        if leave_words.startswith('repeat'):
-            self.deck = self.learned_deck
-            self.learned_deck = []
-            self.rotation_inside_working_deck()"""
+        # if where_to_put_repeated_words == f'{self.bank_deck.deck_name}':
+        # self.move_deck_into_other(self.bank_deck, self.learned_deck)
 
 
 class LearnedDeck(BankDeck):
     def __init__(self):
         super().__init__(f'{learned_deck_name_key}')
-
-
-
-"""print(get_str_time_now())
-print(type(get_str_time_now()))
-
-print(datetime.datetime.now())
-print(type(datetime.datetime.now()))
-
-print(convert_str_time_to_date_time('22.01.22 22:13:59'))
-print(type(convert_str_time_to_date_time('22.01.22 22:13:59')))"""
-
-"""def pick_word_from_bank_deck(self):
-        oldest_word_time = datetime.datetime.now()
-        for word_time_stamp_key in self.bank_deck.deck:
-            if word_time_stamp_key is not None:
-                if oldest_word_time >= word_time_stamp_key:
-                    oldest_word_time = word_time_stamp_key
-        print('oldest_word_time', oldest_word_time)
-        for k, v in self.bank_deck.deck.items():
-            print(k, v)
-
-        # know_it = 'don*t know'
-        know_it = pyinputplus.inputMenu(['know', 'don*t know'], f'know {self.bank_deck.deck[oldest_word_time]}: \n', numbered=True)
-        if know_it == 'know':
-            self.bank_deck.print_words()
-            self.print_words()
-            print(f'ah, u know "{self.bank_deck.deck[oldest_word_time]}"')
-            self.bank_deck.deck[datetime.datetime.now()] = self.bank_deck.deck[oldest_word_time]
-            del self.bank_deck.deck[oldest_word_time]
-            self.bank_deck.print_words()
-            self.print_words()
-
-        else:
-            # <editor-fold desc="sheet adjustment">
-            bank_deck_sheet = words_collection_wb[self.bank_deck.deck_name]
-            working_deck_sheet = words_collection_wb[self.deck_name]
-            for row in range(2, bank_deck_sheet.max_row):
-                if bank_deck_sheet.cell(row=row, column=2).value is not None:
-                    if bank_deck_sheet.cell(row=row, column=2).value == self.bank_deck.deck[oldest_word_time]:
-                        working_deck_sheet.cell(row=working_deck_sheet.max_row + 1, column=1).value = datetime.datetime.now()
-                        working_deck_sheet.cell(row=working_deck_sheet.max_row, column=2).value = self.bank_deck.deck[oldest_word_time]
-                        bank_deck_sheet.delete_rows(row, 1)
-                        words_collection_wb.save(wb_name)
-            # </editor-fold>
-
-            # <editor-fold desc="deck dict adjustment">
-            super().__init__(deck_name=self.deck_name)
-            print(f'{self.bank_deck.deck[oldest_word_time]} ==> moved from {self.bank_deck.deck_name} ==> {self.deck_name}')
-            del self.bank_deck.deck[oldest_word_time]
-            super().__init__(deck_name=self.bank_deck.deck_name)
-
-            # </editor-fold>"""
-
 
