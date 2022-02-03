@@ -41,8 +41,7 @@ class BankDeck:
         start_deck_class = self if start_deck_class is None else start_deck_class
         for word_dict in start_deck_class.deck:
             destination_deck_class.deck.append(word_dict)
-        start_deck_class.deck.clear()# clear_deck()
-        start_deck_class.update_sheet_from_dict_deck()
+        start_deck_class.deck.clear()
         print(f'{start_deck_class.deck_name} ==> {destination_deck_class.deck_name}')
 
     def update_dict_deck_from_sheet(self):
@@ -75,13 +74,7 @@ class BankDeck:
 
     def print_dict_words(self):
         eng_words_lst = self.get_all_eng_words()
-        print(self.deck_name, end=': ')
-        if len(eng_words_lst) == 0:
-            print(f'is empty')
-        else:
-            for value in eng_words_lst[:-1]:
-                print(value, end=' ')
-            print(eng_words_lst[-1])
+        print(self.deck_name, ':', *eng_words_lst)
 
     def print_deck_dicts(self):
         print(self.deck_name)
@@ -121,6 +114,38 @@ class BankDeck:
 
         print(f'there are no words in {self.deck_name}')
 
+    def rotation_inside_deck(self, next_deck_class, bank_deck_class=None):
+        bank_deck_class = BankDeck() if bank_deck_class is None else bank_deck_class
+
+        while len(self.deck) > 0:
+            for word_note in self.deck:
+                know = pyinputplus.inputMenu(['yes', 'no'], f'know {word_note[eng_key]} ?\n', numbered=True)
+
+                if know == 'yes':
+                    next_deck_class.deck.append(word_note)
+                    self.deck.remove(word_note)
+                    print(f'you have learned "{word_note[eng_key]}" \n'
+                          f'so it goes out of this rotation to {next_deck_class.deck_name}')
+
+                if know == 'no':
+                    word_note[time_key] = get_str_time_now()
+                    print(f'{word_note[eng_key]} goes in the end of the {self.deck_name}')
+        self.when_repeated_all_words()
+
+    def when_repeated_all_words(self):
+        print(f'you have repeated words from {working_deck_name_key}')
+
+        where_to_put_repeated_words = pyinputplus.inputMenu([f'move to {self.deck_name}',
+                                                             f'move to {bank_deck_class.deck_name}',
+                                                             f'leave in {next_deck_class.deck_name}'],
+                                                             f'Where to put words from {next_deck_class.deck_name}?\n', numbered=True)
+
+        if where_to_put_repeated_words == f'{self.deck_name}':
+            self.move_deck_into_other(self, next_deck_class)
+
+        """if where_to_put_repeated_words == f'{next_deck_class.deck_name}':
+            self.move_deck_into_other(self.bank_deck, self.learned_deck)"""
+
 
 class WorkingDeck(BankDeck):
     def __init__(self):
@@ -128,7 +153,12 @@ class WorkingDeck(BankDeck):
         self.bank_deck = BankDeck()
         self.learned_deck = LearnedDeck()
 
-    def rotation_inside_working_deck(self):
+
+class LearnedDeck(BankDeck):
+    def __init__(self):
+        super().__init__(f'{learned_deck_name_key}')
+
+"""def rotation_inside_deck(self):
         while len(self.deck) > 0:
             for word_note in self.deck:
                 know = "yes" # pyinputplus.inputMenu(['yes', 'no'], f'know {word_note[eng_key]} ?\n', numbered=True)
@@ -151,10 +181,4 @@ class WorkingDeck(BankDeck):
         self.move_deck_into_other(self, self.learned_deck)
 
         # if where_to_put_repeated_words == f'{self.bank_deck.deck_name}':
-        # self.move_deck_into_other(self.bank_deck, self.learned_deck)
-
-
-class LearnedDeck(BankDeck):
-    def __init__(self):
-        super().__init__(f'{learned_deck_name_key}')
-
+        # self.move_deck_into_other(self.bank_deck, self.learned_deck)"""

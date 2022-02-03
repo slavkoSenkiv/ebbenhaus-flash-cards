@@ -33,6 +33,5 @@ d2 = classes_gs.WorkingDeck()
 d3 = classes_gs.LearnedDeck()
 
 print_words()
-d2.rotation_inside_working_deck()
-update_decks()
+d2.rotation_inside_deck(d3)
 print_words()
