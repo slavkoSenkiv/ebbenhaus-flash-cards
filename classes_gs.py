@@ -37,8 +37,7 @@ class BankDeck:
         self.deck_sheet = gs.worksheet(deck_name)
         self.deck = self.deck_sheet.get_all_records()
 
-    def move_deck_into_other(self, destination_deck_class, start_deck_class=None):
-        start_deck_class = self if start_deck_class is None else start_deck_class
+    def move_deck_into_other(self, destination_deck_class, start_deck_class):
         for word_dict in start_deck_class.deck:
             destination_deck_class.deck.append(word_dict)
         start_deck_class.deck.clear()
@@ -130,18 +129,18 @@ class BankDeck:
                 if know == 'no':
                     word_note[time_key] = get_str_time_now()
                     print(f'{word_note[eng_key]} goes in the end of the {self.deck_name}')
-        self.when_repeated_all_words()
-
-    def when_repeated_all_words(self):
         print(f'you have repeated words from {working_deck_name_key}')
 
         where_to_put_repeated_words = pyinputplus.inputMenu([f'move to {self.deck_name}',
                                                              f'move to {bank_deck_class.deck_name}',
                                                              f'leave in {next_deck_class.deck_name}'],
-                                                             f'Where to put words from {next_deck_class.deck_name}?\n', numbered=True)
+                                                             f'Where to put words from {next_deck_class.deck_name}?\n',
+                                                             numbered=True)
 
         if where_to_put_repeated_words == f'{self.deck_name}':
             self.move_deck_into_other(self, next_deck_class)
+
+
 
         """if where_to_put_repeated_words == f'{next_deck_class.deck_name}':
             self.move_deck_into_other(self.bank_deck, self.learned_deck)"""
